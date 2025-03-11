@@ -40,7 +40,7 @@ func (f *Workflow) AppendNode(node *Node) {
 func (f *Workflow) AppendParallelNodes(nodes ...*Node) {
 	parallel := compose.NewParallel()
 	for _, node := range nodes {
-		parallel.AddLambda(node.Name, node.Lambda())
+		parallel.AddLambda(node.Params.Name, node.Lambda())
 	}
 
 	f.Chain.AppendParallel(parallel)

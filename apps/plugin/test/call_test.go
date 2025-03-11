@@ -103,7 +103,7 @@ func TestUpdatePluginTool(t *testing.T) {
 		Required: []string{"location", "unit"},
 	}
 
-	requestType, _ := reqType.Def().MarshalJSON()
+	requestType, _ := json.Marshal(reqType.Def())
 
 	respType := &caller.ResponseType{
 		Type: jsonschema.Object,
@@ -125,7 +125,7 @@ func TestUpdatePluginTool(t *testing.T) {
 		},
 		Required: []string{"code", "message"},
 	}
-	responseType, _ := respType.Def().MarshalJSON()
+	responseType, _ := json.Marshal(respType.Def())
 
 	tests.RpcCallWrap(rpc.PluginCli.UpdateTool(ctx, &pluginsvc.UpdatePluginToolReq{
 		Id:           1,

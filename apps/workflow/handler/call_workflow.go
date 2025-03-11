@@ -121,10 +121,12 @@ func (s *WorkflowServiceImpl) buildWorkflowNode(ctx context.Context, node *model
 	}
 
 	n := workflow.Node{
-		Name:         node.Name,
-		InputMapper:  node.InputMapper,
-		OutputSchema: node.OutputSchema,
-		BatchField:   node.BatchField,
+		Params: &workflow.NodeParams{
+			Name:         node.Name,
+			InputMapper:  node.InputMapper,
+			OutputSchema: node.OutputSchema,
+			BatchField:   node.BatchField,
+		},
 	}
 
 	switch node.Type {
@@ -133,12 +135,12 @@ func (s *WorkflowServiceImpl) buildWorkflowNode(ctx context.Context, node *model
 
 		llmModel, err := s.modelCli.GetModelByID(ctx, &base.IDReq{Id: params.ModelID})
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "get model error")
 		}
 
 		apiKey, err := s.modelCli.GetAPIKeyByModel(ctx, &modelsvc.GetAPIKeyByModelReq{ModelId: utils.PtrOf(params.ModelID)})
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "get api key error")
 		}
 
 		n.Runner = workflow.NewLLMNodeRunner(
@@ -147,7 +149,6 @@ func (s *WorkflowServiceImpl) buildWorkflowNode(ctx context.Context, node *model
 			llmModel.ModelKey,
 			params.SystemPrompt,
 			params.UserPrompt,
-			node.OutputSchema.Properties,
 		)
 	case model.WorkflowNodeTypePlugin:
 		params := node.NodeParams.Plugin

@@ -13,7 +13,9 @@ var ctx = tests.InitTesting()
 
 func TestCallWorkflow(t *testing.T) {
 	input := workflow.Object{
-		"query": "hello",
+		"owner": "aiagt",
+		"repo":  "aiagt",
+		"query": "how to call plugin",
 	}
 
 	tests.RpcCallWrap(rpc.WorkflowCli.CallWorkflow(ctx, &workflowsvc.CallWorkflowReq{

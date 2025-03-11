@@ -1,7 +1,6 @@
 package schema
 
 import (
-	"encoding/json"
 	"errors"
 	"github.com/aiagt/aiagt/pkg/lists"
 	"github.com/aiagt/aiagt/pkg/utils"
@@ -19,15 +18,6 @@ type Definition struct {
 	Default    interface{}           `json:"default,omitempty"`
 	Properties map[string]Definition `json:"properties,omitempty"`
 	Items      *Definition           `json:"items,omitempty"`
-}
-
-func (d *Definition) MarshalJSON() ([]byte, error) {
-	result, err := json.Marshal(d)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
 }
 
 func (d *Definition) Schema() *jsonschema.Definition {

@@ -150,7 +150,7 @@ func (c Object) JSON() ([]byte, error) {
 }
 
 func (c Object) Pretty() string {
-	return pretty(c)
+	return utils.Pretty(c, 1<<10)
 }
 
 func (c Object) PrettyIndent() string {

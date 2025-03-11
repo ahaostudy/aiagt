@@ -24,7 +24,7 @@ func NewPluginNodeRunner(pluginID, toolID int64, secrets map[string]string, plug
 	}
 }
 
-func (r *PluginNodeRunner) Run(ctx context.Context, input workflow.Object) (workflow.Object, error) {
+func (r *PluginNodeRunner) Run(ctx context.Context, params *workflow.NodeParams, input workflow.Object) (workflow.Object, error) {
 	req, err := input.JSON()
 	if err != nil {
 		return nil, fmt.Errorf("encode input object error: %w", err)

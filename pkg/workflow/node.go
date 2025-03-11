@@ -2,62 +2,75 @@ package workflow
 
 import (
 	"context"
-	"github.com/aiagt/aiagt/pkg/hash/hmap"
 	"github.com/aiagt/aiagt/pkg/schema"
 	"github.com/cloudwego/eino-ext/components/model/openai"
 	openaigo "github.com/cloudwego/eino-ext/libs/acl/openai"
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/compose"
 	einoschema "github.com/cloudwego/eino/schema"
-	"github.com/sashabaranov/go-openai/jsonschema"
 )
 
 type Node struct {
+	Params *NodeParams `json:"params"`
+	Runner NodeRunner  `json:"-"`
+}
+
+func NewNode(params *NodeParams, runner NodeRunner) *Node {
+	return &Node{Params: params, Runner: runner}
+}
+
+type NodeParams struct {
 	Name         string             `gorm:"column:name;NOT NULL" json:"name"`
 	InputMapper  ObjectMapper       `gorm:"column:input_mapper;serializer:json;type:json" json:"input_mapper"`
 	OutputSchema *schema.Definition `gorm:"column:output_schema;serializer:json;type:json" json:"output_schema"`
 	BatchField   *ObjectField       `gorm:"column:batch_field;serializer:json;type:json" json:"batch_field"`
 	Start        bool               `gorm:"column:start" json:"start"`
 	End          bool               `gorm:"column:end" json:"end"`
-
-	Runner NodeRunner `json:"-"`
 }
 
 func (node *Node) Lambda() *compose.Lambda {
-	if node.BatchField != nil {
-		return NodeLambdaBatch(node.Name, node.InputMapper, ArraySplitter(node.BatchField), node.Runner.Run)
+	run := func(ctx context.Context, input Object) (Object, error) {
+		return node.Runner.Run(ctx, node.Params, input)
 	}
 
-	if node.Start {
-		return NodeLambdaStart(node.Runner.Run)
+	if node.Params.BatchField != nil {
+		return NodeLambdaBatch(node.Params.Name, node.Params.InputMapper, ArraySplitter(node.Params.BatchField), run)
 	}
 
-	if node.End {
-		return NodeLambdaEnd(node.InputMapper, node.Runner.Run)
+	if node.Params.Start {
+		return NodeLambdaStart(run)
 	}
 
-	return NodeLambda(node.Name, node.InputMapper, node.Runner.Run)
+	if node.Params.End {
+		return NodeLambdaEnd(node.Params.InputMapper, run)
+	}
+
+	return NodeLambda(node.Params.Name, node.Params.InputMapper, run)
 }
 
 func NewStartNode() *Node {
 	return &Node{
-		Name:   NodeNameStart,
-		Start:  true,
+		Params: &NodeParams{
+			Name:  NodeNameStart,
+			Start: true,
+		},
 		Runner: NewDirectNodeRunner(),
 	}
 }
 
 func NewEndNode(inputMapper ObjectMapper) *Node {
 	return &Node{
-		Name:        NodeNameEnd,
-		InputMapper: inputMapper,
-		End:         true,
-		Runner:      NewDirectNodeRunner(),
+		Params: &NodeParams{
+			Name:        NodeNameEnd,
+			InputMapper: inputMapper,
+			End:         true,
+		},
+		Runner: NewDirectNodeRunner(),
 	}
 }
 
 type NodeRunner interface {
-	Run(ctx context.Context, input Object) (Object, error)
+	Run(ctx context.Context, params *NodeParams, input Object) (Object, error)
 }
 
 type FunctionNodeRunner struct {
@@ -68,7 +81,7 @@ func NewFunctionNodeRunner(runner func(ctx context.Context, input Object) (Objec
 	return &FunctionNodeRunner{runner: runner}
 }
 
-func (r *FunctionNodeRunner) Run(ctx context.Context, input Object) (Object, error) {
+func (r *FunctionNodeRunner) Run(ctx context.Context, _ *NodeParams, input Object) (Object, error) {
 	return r.runner(ctx, input)
 }
 
@@ -78,21 +91,19 @@ type LLMNodeRunner struct {
 	model        string
 	systemPrompt string
 	userPrompt   string
-	outputSchema map[string]schema.Definition
 }
 
-func NewLLMNodeRunner(baseURL, apiKey, model, systemPrompt, userPrompt string, outputSchema map[string]schema.Definition) *LLMNodeRunner {
+func NewLLMNodeRunner(baseURL, apiKey, model, systemPrompt, userPrompt string) *LLMNodeRunner {
 	return &LLMNodeRunner{
 		baseURL:      baseURL,
 		apiKey:       apiKey,
 		model:        model,
 		systemPrompt: systemPrompt,
 		userPrompt:   userPrompt,
-		outputSchema: outputSchema,
 	}
 }
 
-func (r *LLMNodeRunner) Run(ctx context.Context, input Object) (Object, error) {
+func (r *LLMNodeRunner) Run(ctx context.Context, params *NodeParams, input Object) (Object, error) {
 	template := prompt.FromMessages(einoschema.FString,
 		&einoschema.Message{
 			Role:    einoschema.System,
@@ -116,13 +127,8 @@ func (r *LLMNodeRunner) Run(ctx context.Context, input Object) (Object, error) {
 		ResponseFormat: &openaigo.ChatCompletionResponseFormat{
 			Type: openaigo.ChatCompletionResponseFormatTypeJSONSchema,
 			JSONSchema: &openaigo.ChatCompletionResponseFormatJSONSchema{
-				Name: "output",
-				Schema: (&schema.Definition{
-					Type:                 jsonschema.Object,
-					Required:             hmap.Of(r.outputSchema).Keys(),
-					AdditionalProperties: false,
-					Properties:           r.outputSchema,
-				}).SchemaV3(),
+				Name:   "output",
+				Schema: params.OutputSchema.SchemaV3(),
 				Strict: true,
 			},
 		},
@@ -150,6 +156,6 @@ func NewDirectNodeRunner() *DirectNodeRunner {
 	return &DirectNodeRunner{}
 }
 
-func (r *DirectNodeRunner) Run(ctx context.Context, input Object) (Object, error) {
+func (r *DirectNodeRunner) Run(ctx context.Context, _ *NodeParams, input Object) (Object, error) {
 	return input, nil
 }

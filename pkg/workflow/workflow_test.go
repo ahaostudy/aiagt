@@ -3,7 +3,9 @@ package workflow
 import (
 	"context"
 	"github.com/aiagt/aiagt/pkg/schema"
+	"github.com/aiagt/aiagt/pkg/utils"
 	"github.com/cloudwego/eino-ext/devops"
+	"github.com/sashabaranov/go-openai/jsonschema"
 	"github.com/stretchr/testify/require"
 	"log"
 	"os"
@@ -19,12 +21,14 @@ func TestWorkflow(t *testing.T) {
 	workflow.AppendNode(NewStartNode())
 
 	workflow.AppendNode(&Node{
-		Name: "read_project_structure",
-		InputMapper: ObjectMapper{
-			{Name: "owner", RefNode: "start", RefPath: "owner"},
-			{Name: "repo", RefNode: "start", RefPath: "repo"},
-			{Name: "path", Constant: "/"},
-			{Name: "recursion", Constant: true},
+		Params: &NodeParams{
+			Name: "read_project_structure",
+			InputMapper: ObjectMapper{
+				{Name: "owner", RefNode: "start", RefPath: "owner"},
+				{Name: "repo", RefNode: "start", RefPath: "repo"},
+				{Name: "path", Constant: "/"},
+				{Name: "recursion", Constant: true},
+			},
 		},
 		Runner: NewFunctionNodeRunner(func(ctx context.Context, input Object) (Object, error) {
 			return Object{"children": []Object{
@@ -75,35 +79,45 @@ Now you need to find the code according to the user. Please return the path to t
 	)
 
 	workflow.AppendNode(&Node{
-		Name: "extract_target_directory",
-		InputMapper: ObjectMapper{
-			{Name: "owner", RefNode: "start", RefPath: "owner"},
-			{Name: "repo", RefNode: "start", RefPath: "repo"},
-			{Name: "query", RefNode: "start", RefPath: "query"},
-			{Name: "tree", RefNode: "read_project_structure", RefPath: "children"},
-		},
-		Runner: NewLLMNodeRunner(OpenaiBaseUrl, OpenaiApiKey, ModelName, systemPrompt, userPrompt, map[string]schema.Definition{
-			"dirs": {
-				Type:        "array",
-				Description: "target dirs",
-				Items: &schema.Definition{
-					Type: "string",
+		Params: &NodeParams{
+			Name: "extract_target_directory",
+			InputMapper: ObjectMapper{
+				{Name: "owner", RefNode: "start", RefPath: "owner"},
+				{Name: "repo", RefNode: "start", RefPath: "repo"},
+				{Name: "query", RefNode: "start", RefPath: "query"},
+				{Name: "tree", RefNode: "read_project_structure", RefPath: "children"},
+			},
+			OutputSchema: &schema.Definition{
+				Type:                 jsonschema.Object,
+				Required:             []string{"dirs"},
+				AdditionalProperties: utils.PtrOf(false),
+				Properties: map[string]schema.Definition{
+					"dirs": {
+						Type:        "array",
+						Description: "target dirs",
+						Items: &schema.Definition{
+							Type: "string",
+						},
+					},
 				},
 			},
-		}),
+		},
+		Runner: NewLLMNodeRunner(OpenaiBaseUrl, OpenaiApiKey, ModelName, systemPrompt, userPrompt),
 	})
 
 	workflow.AppendNode(&Node{
-		Name: "read_target_trees",
-		InputMapper: ObjectMapper{
-			{Name: "owner", RefNode: "start", RefPath: "owner"},
-			{Name: "repo", RefNode: "start", RefPath: "repo"},
-			{Name: "recursion", Constant: true},
-		},
-		BatchField: &ObjectField{
-			Name:    "dir",
-			RefNode: "extract_target_directory",
-			RefPath: "dirs",
+		Params: &NodeParams{
+			Name: "read_target_trees",
+			InputMapper: ObjectMapper{
+				{Name: "owner", RefNode: "start", RefPath: "owner"},
+				{Name: "repo", RefNode: "start", RefPath: "repo"},
+				{Name: "recursion", Constant: true},
+			},
+			BatchField: &ObjectField{
+				Name:    "dir",
+				RefNode: "extract_target_directory",
+				RefPath: "dirs",
+			},
 		},
 		Runner: NewFunctionNodeRunner(func(ctx context.Context, input Object) (Object, error) {
 			return Object{
@@ -113,9 +127,11 @@ Now you need to find the code according to the user. Please return the path to t
 	})
 
 	workflow.AppendNode(&Node{
-		Name: "extract_files_by_trees",
-		InputMapper: ObjectMapper{
-			{Name: "trees", RefNode: "read_target_trees", BatchOutput: true},
+		Params: &NodeParams{
+			Name: "extract_files_by_trees",
+			InputMapper: ObjectMapper{
+				{Name: "trees", RefNode: "read_target_trees", BatchOutput: true},
+			},
 		},
 		Runner: NewFunctionNodeRunner(func(ctx context.Context, input Object) (Object, error) {
 			trees := input.ObjectArray("trees")
@@ -134,11 +150,13 @@ Now you need to find the code according to the user. Please return the path to t
 	})
 
 	workflow.AppendNode(&Node{
-		Name: "read_files_content",
-		InputMapper: ObjectMapper{
-			{Name: "owner", RefNode: "start", RefPath: "owner"},
-			{Name: "repo", RefNode: "start", RefPath: "repo"},
-			{Name: "files", RefNode: "extract_files_by_trees", RefPath: "files"},
+		Params: &NodeParams{
+			Name: "read_files_content",
+			InputMapper: ObjectMapper{
+				{Name: "owner", RefNode: "start", RefPath: "owner"},
+				{Name: "repo", RefNode: "start", RefPath: "repo"},
+				{Name: "files", RefNode: "extract_files_by_trees", RefPath: "files"},
+			},
 		},
 		Runner: NewFunctionNodeRunner(func(ctx context.Context, input Object) (Object, error) {
 			return Object{
