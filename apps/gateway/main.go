@@ -54,7 +54,7 @@ func init() {
 	)
 
 	ktcenter.ApplyDynamicConfig(
-		ktcenter.WithConsulConfigCenter(nil),
+		confutil.NewConfigCenterWithBackup(conf.Server.Name),
 		&conf.ConfigCenter,
 		conf.Server.Name,
 		conf,

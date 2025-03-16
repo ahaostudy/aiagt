@@ -1,6 +1,7 @@
 package observability
 
 import (
+	"github.com/aiagt/aiagt/pkg/utils"
 	"net"
 	"net/http"
 
@@ -20,7 +21,7 @@ func InitMetrics(dest, metricsAddr, registryAddr string) (registry.Registry, *re
 	Registry.MustRegister(collectors.NewGoCollector())
 	Registry.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 
-	r, err := consul.NewConsulRegister(registryAddr)
+	r, err := consul.NewConsulRegister(utils.CompleteAddress(registryAddr))
 	logerr.Fatal(err)
 
 	addr, err := net.ResolveTCPAddr("tcp", metricsAddr)

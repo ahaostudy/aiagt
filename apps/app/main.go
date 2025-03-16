@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/aiagt/aiagt/common/confutil"
 	"log"
 
 	"github.com/aiagt/aiagt/common/logger"
@@ -8,7 +9,6 @@ import (
 
 	"github.com/aiagt/aiagt/common/observability"
 	"github.com/aiagt/aiagt/pkg/logerr"
-	ktcenter "github.com/aiagt/kitextool/conf/center"
 	ktregistry "github.com/aiagt/kitextool/option/server/registry"
 	"gorm.io/plugin/opentelemetry/tracing"
 
@@ -36,7 +36,7 @@ func main() {
 		server.WithSuite(ktserver.NewKitexToolSuite(
 			config,
 			ktlog.WithLogger(logger.Logger()),
-			ktserver.WithDynamicConfig(ktcenter.WithConsulConfigCenter(nil)),
+			ktserver.WithDynamicConfig(confutil.NewConfigCenterWithBackup(config.Server.Name)),
 			ktregistry.WithRegistry(ktregistry.NewConsulRegistry()),
 			ktdb.WithDB(ktdb.NewMySQLDial(), ktdb.WithGormConf(&gorm.Config{TranslateError: true})),
 		)),

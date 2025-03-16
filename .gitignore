@@ -4,6 +4,7 @@
 **/.DS_Store
 **/conf-local.yaml
 assets
+backup
 deploy/mysql
 deploy/consul
 deploy/redis
