@@ -5,7 +5,7 @@ go 1.22.5
 toolchain go1.23.1
 
 require (
-	github.com/aiagt/kitextool v0.0.4
+	github.com/aiagt/kitextool v0.0.7
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/bytedance/gopkg v0.1.1
 	github.com/cloudwego/eino v0.3.13

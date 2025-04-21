@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/aiagt/aiagt/common/kitex/ktserveroption"
 	"log"
 
 	"github.com/aiagt/aiagt/common/logger"
@@ -27,7 +28,12 @@ import (
 )
 
 func main() {
-	handle := handler.NewPluginService(db.NewPluginDao(), db.NewLabelDao(), db.NewToolDao(), rpc.UserCli)
+	handle := handler.NewPluginService(
+		db.NewPluginDao(),
+		db.NewLabelDao(),
+		db.NewToolDao(),
+		rpc.UserCli,
+	)
 
 	config := conf.Conf()
 	observability.InitMetrics(config.Server.Name, config.Metrics.Addr, config.Registry.Address[0])
@@ -36,6 +42,7 @@ func main() {
 	svr := pluginsvc.NewServer(handle,
 		server.WithSuite(ktserver.NewKitexToolSuite(
 			config,
+			ktserveroption.WithLocalIpOption(),
 			ktlog.WithLogger(logger.Logger()),
 			ktserver.WithDynamicConfig(ktcenter.WithConsulConfigCenter(nil)),
 			ktregistry.WithRegistry(ktregistry.NewConsulRegistry()),

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/aiagt/aiagt/common/kitex/ktserveroption"
 	"github.com/aiagt/aiagt/rpc"
 	"log"
 
@@ -28,7 +29,12 @@ import (
 )
 
 func main() {
-	handle := handler.NewUserService(db.NewUserDao(), db.NewSecretDao(), cache.NewCaptchaCache(), rpc.PluginCli)
+	handle := handler.NewUserService(
+		db.NewUserDao(),
+		db.NewSecretDao(),
+		cache.NewCaptchaCache(),
+		rpc.PluginCli,
+	)
 
 	config := conf.Conf()
 	observability.InitMetrics(config.Server.Name, config.Metrics.Addr, config.Registry.Address[0])
@@ -37,6 +43,7 @@ func main() {
 	svr := usersvc.NewServer(handle,
 		server.WithSuite(ktserver.NewKitexToolEmptySuite(
 			config,
+			ktserveroption.WithLocalIpOption(),
 			ktlog.WithLogger(logger.Logger()),
 			ktserver.WithDynamicConfig(ktcenter.WithConsulConfigCenter(nil)),
 			ktregistry.WithRegistry(ktregistry.NewConsulRegistry()),

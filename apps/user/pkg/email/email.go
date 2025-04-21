@@ -1,6 +1,7 @@
 package email
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/smtp"
 
@@ -18,7 +19,7 @@ func Send(subject, html string, toEmails ...string) error {
 	e.HTML = []byte(html)
 	auth := smtp.PlainAuth("", config.EmailAddress, config.Auth, config.SmtpHost)
 
-	return e.Send(config.SmtpAddr, auth)
+	return e.SendWithStartTLS(config.SmtpAddr, auth, &tls.Config{InsecureSkipVerify: true})
 }
 
 func SendAuthCaptcha(captcha string, toEmails ...string) error {

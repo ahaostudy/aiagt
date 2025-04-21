@@ -5,6 +5,7 @@ import (
 	"github.com/aiagt/aiagt/apps/workflow/dal/db"
 	"github.com/aiagt/aiagt/apps/workflow/handler"
 	"github.com/aiagt/aiagt/apps/workflow/model"
+	"github.com/aiagt/aiagt/common/kitex/ktserveroption"
 	"github.com/aiagt/aiagt/common/kitex/serversuite"
 	"github.com/aiagt/aiagt/common/logger"
 	"github.com/aiagt/aiagt/common/observability"
@@ -38,6 +39,7 @@ func main() {
 	svr := workflowsvc.NewServer(handle,
 		server.WithSuite(ktserver.NewKitexToolSuite(
 			config,
+			ktserveroption.WithLocalIpOption(),
 			ktlog.WithLogger(logger.Logger()),
 			ktserver.WithDynamicConfig(ktcenter.WithConsulConfigCenter(nil)),
 			ktregistry.WithRegistry(ktregistry.NewConsulRegistry()),

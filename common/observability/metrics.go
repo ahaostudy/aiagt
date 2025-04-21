@@ -1,6 +1,7 @@
 package observability
 
 import (
+	ktutils "github.com/aiagt/kitextool/utils"
 	"net"
 	"net/http"
 
@@ -16,6 +17,8 @@ import (
 var Registry *prometheus.Registry
 
 func InitMetrics(dest, metricsAddr, registryAddr string) (registry.Registry, *registry.Info) {
+	metricsAddr, registryAddr = ktutils.CompleteAddress(metricsAddr), ktutils.CompleteAddress(registryAddr)
+
 	Registry = prometheus.NewRegistry()
 	Registry.MustRegister(collectors.NewGoCollector())
 	Registry.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))

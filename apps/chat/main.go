@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/aiagt/aiagt/common/kitex/ktserveroption"
 	"log"
 
 	"github.com/aiagt/aiagt/common/logger"
@@ -43,6 +44,7 @@ func main() {
 	svr := chatsvc.NewServer(handle,
 		server.WithSuite(ktserver.NewKitexToolSuite(
 			config,
+			ktserveroption.WithLocalIpOption(),
 			ktlog.WithLogger(logger.Logger()),
 			ktserver.WithDynamicConfig(ktcenter.WithConsulConfigCenter(nil)),
 			ktregistry.WithRegistry(ktregistry.NewConsulRegistry()),

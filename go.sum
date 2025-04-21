@@ -40,8 +40,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/QcloudApi/qcloud_sign_golang v0.0.0-20141224014652-e4130a326409/go.mod h1:1pk82RBxDY/JZnPQrtqHlUFfCctgdorsd9M06fMynOM=
-github.com/aiagt/kitextool v0.0.4 h1:C45auZvxSviGdye9JVRXdRQGb9xyDik+hmrvi5kaIy8=
-github.com/aiagt/kitextool v0.0.4/go.mod h1:NEeLq68rmT9JR6cPkcgRIXh75M3zm3K5taWA6bKLZh4=
+github.com/aiagt/kitextool v0.0.7 h1:y1iq5IwKd2UMRu10OxanNriVYojScvoL9vp+3sS2mHc=
+github.com/aiagt/kitextool v0.0.7/go.mod h1:DLO+4NQoL82EqhuKqUTudaqO9F9K58REj2nR6oSdEDs=
 github.com/airbrake/gobrake v3.6.1+incompatible/go.mod h1:wM4gu3Cn0W0K7GUuVWnlXZU11AGBXMILnrdOU8Kn00o=
 github.com/ajstarks/deck v0.0.0-20200831202436-30c9fc6549a9/go.mod h1:JynElWSGnm/4RlzPXRlREEwqTHAN3T56Bv2ITsFT3gY=
 github.com/ajstarks/deck/generate v0.0.0-20210309230005-c3f852c02e19/go.mod h1:T13YZdzov6OU0A1+RfKZiZN9ca6VeKdBdyDV+BY97Tk=
