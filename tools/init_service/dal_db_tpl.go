@@ -103,6 +103,30 @@ func (d *{{ .Model.Camel }}Dao) Delete(ctx context.Context, id int64) error {
 
     return nil
 }
+
+// GetBy get by condition
+func (d *{{ .Model.Camel }}Dao) GetBy(ctx context.Context, scopes ...func(*gorm.DB) *gorm.DB) (*model.{{ .Model.Camel }}, error) {
+	var result model.{{ .Model.Camel }}
+
+	err := d.db(ctx).Model(d.m).Scopes(scopes...).First(&result).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "{{ .Model.Snake }} dao get by error")
+	}
+
+	return &result, nil
+}
+
+// ListBy list by condition
+func (d *{{ .Model.Camel }}Dao) ListBy(ctx context.Context, scopes ...func(*gorm.DB) *gorm.DB) ([]*model.{{ .Model.Camel }}, error) {
+	var result []*model.{{ .Model.Camel }}
+
+	err := d.db(ctx).Model(d.m).Scopes(scopes...).Find(&result).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "{{ .Model.Snake }} dao list by error")
+	}
+
+	return result, nil
+}
 `
 
 var DalDBTpl = NewTemplate("dal.db", dalDBTpl, false)

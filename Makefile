@@ -7,9 +7,9 @@ install:
 
 gen-rpc:
 	@mkdir -p apps/${svc} && \
-	kitex -module github.com/aiagt/aiagt idl/${svc}.thrift && \
+	kitex -module github.com/aiagt/aiagt -thrift code_ref idl/${svc}.thrift && \
 	cd apps/${svc} && \
-	kitex -module github.com/aiagt/aiagt -service ${svc}service -use github.com/aiagt/aiagt/kitex_gen -I ../../idl/ ../../idl/${svc}.thrift && \
+	kitex -module github.com/aiagt/aiagt -service ${svc}service -thrift code_ref -use github.com/aiagt/aiagt/kitex_gen -I ../../idl/ ../../idl/${svc}.thrift && \
 	gen_handler --service_path=. --remove_handler=true
 
 model_list = $(foreach model,$(models),-model $(model))

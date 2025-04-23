@@ -3,10 +3,11 @@ package handler
 import (
 	"errors"
 	"fmt"
-	"github.com/aiagt/aiagt/apps/model/model"
-	"github.com/sashabaranov/go-openai"
 	"io"
 	"time"
+
+	"github.com/aiagt/aiagt/apps/model/model"
+	"github.com/sashabaranov/go-openai"
 
 	"github.com/aiagt/aiagt/pkg/utils"
 	"github.com/cloudwego/kitex/pkg/klog"

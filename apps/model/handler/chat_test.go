@@ -3,9 +3,10 @@ package handler
 import (
 	"context"
 	"fmt"
-	"github.com/aiagt/aiagt/apps/model/model"
 	"io"
 	"testing"
+
+	"github.com/aiagt/aiagt/apps/model/model"
 
 	"github.com/aiagt/aiagt/pkg/schema"
 

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+
 	"github.com/aiagt/aiagt/apps/workflow/model"
 	"github.com/aiagt/aiagt/apps/workflow/pkg/wfutil"
 	"github.com/aiagt/aiagt/kitex_gen/base"
@@ -26,7 +27,7 @@ func (s *WorkflowServiceImpl) CallWorkflow(ctx context.Context, req *workflowsvc
 		return nil, bizCallWorkflow.NewErr(err).Log(ctx, "build workflow error")
 	}
 
-	reqObj, err := workflow.NewJSONObject(req.Request)
+	reqObj, err := workflow.NewJSONObject([]byte(req.Request))
 	if err != nil {
 		return nil, bizCallWorkflow.NewErr(err).Log(ctx, "decode workflow request error")
 	}
@@ -42,7 +43,7 @@ func (s *WorkflowServiceImpl) CallWorkflow(ctx context.Context, req *workflowsvc
 	}
 
 	resp = &workflowsvc.CallWorkflowResp{
-		Response: respBody,
+		Response: string(respBody),
 	}
 
 	return

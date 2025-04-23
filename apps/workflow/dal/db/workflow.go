@@ -101,3 +101,27 @@ func (d *WorkflowDao) Delete(ctx context.Context, id int64) error {
 
 	return nil
 }
+
+// GetBy get by condition
+func (d *WorkflowDao) GetBy(ctx context.Context, scopes ...func(*gorm.DB) *gorm.DB) (*model.Workflow, error) {
+	var result model.Workflow
+
+	err := d.db(ctx).Model(d.m).Scopes(scopes...).First(&result).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "workflow dao get by error")
+	}
+
+	return &result, nil
+}
+
+// ListBy list by condition
+func (d *WorkflowDao) ListBy(ctx context.Context, scopes ...func(*gorm.DB) *gorm.DB) ([]*model.Workflow, error) {
+	var result []*model.Workflow
+
+	err := d.db(ctx).Model(d.m).Scopes(scopes...).Find(&result).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "workflow dao list by error")
+	}
+
+	return result, nil
+}

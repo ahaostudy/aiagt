@@ -7,15 +7,39 @@ import "github.com/aiagt/aiagt/common/bizerr"
 const (
 	ServiceName = "workflow"
 
-	bizCodeCallWorkflow = 0
+	bizCodeCallWorkflow        = 0
+	bizCodeCreateWorkflow      = 1
+	bizCodeCreateWorkflowNode  = 2
+	bizCodeDeleteWorkflow      = 3
+	bizCodeDeleteWorkflowNode  = 4
+	bizCodeGetWorkflowByID     = 5
+	bizCodeGetWorkflowNodeByID = 6
+	bizCodeUpdateWorkflow      = 7
+	bizCodeUpdateWorkflowNode  = 8
 )
 
 var (
-	bizCallWorkflow *bizerr.Biz
+	bizCallWorkflow        *bizerr.Biz
+	bizCreateWorkflow      *bizerr.Biz
+	bizCreateWorkflowNode  *bizerr.Biz
+	bizDeleteWorkflow      *bizerr.Biz
+	bizDeleteWorkflowNode  *bizerr.Biz
+	bizGetWorkflowByID     *bizerr.Biz
+	bizGetWorkflowNodeByID *bizerr.Biz
+	bizUpdateWorkflow      *bizerr.Biz
+	bizUpdateWorkflowNode  *bizerr.Biz
 )
 
 func initServiceBusiness(serviceCode int) {
 	baseCode := (serviceCode + 100) * 100
 
 	bizCallWorkflow = bizerr.NewBiz(ServiceName, "call_workflow", baseCode+bizCodeCallWorkflow)
+	bizCreateWorkflow = bizerr.NewBiz(ServiceName, "create_workflow", baseCode+bizCodeCreateWorkflow)
+	bizCreateWorkflowNode = bizerr.NewBiz(ServiceName, "create_workflow_node", baseCode+bizCodeCreateWorkflowNode)
+	bizDeleteWorkflow = bizerr.NewBiz(ServiceName, "delete_workflow", baseCode+bizCodeDeleteWorkflow)
+	bizDeleteWorkflowNode = bizerr.NewBiz(ServiceName, "delete_workflow_node", baseCode+bizCodeDeleteWorkflowNode)
+	bizGetWorkflowByID = bizerr.NewBiz(ServiceName, "get_workflow_by_id", baseCode+bizCodeGetWorkflowByID)
+	bizGetWorkflowNodeByID = bizerr.NewBiz(ServiceName, "get_workflow_node_by_id", baseCode+bizCodeGetWorkflowNodeByID)
+	bizUpdateWorkflow = bizerr.NewBiz(ServiceName, "update_workflow", baseCode+bizCodeUpdateWorkflow)
+	bizUpdateWorkflowNode = bizerr.NewBiz(ServiceName, "update_workflow_node", baseCode+bizCodeUpdateWorkflowNode)
 }
