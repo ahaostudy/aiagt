@@ -4,6 +4,7 @@ include './base.thrift'
 include './plugin.thrift'
 include './user.thrift'
 include './openai.thrift'
+include './knowledge.thrift'
 
 struct App {
     1: required i64 id
@@ -29,6 +30,8 @@ struct App {
     21: required base.Time updated_at
     22: optional base.Time published_at
     23: optional list<plugin.PluginSecrets> plugin_secrets
+    24: required list<i64> knowledge_ids
+    25: optional list<knowledge.Knowledge> knowledge_list
 }
 
 struct ModelConfig {
@@ -84,6 +87,7 @@ struct UpdateAppReq {
     14: optional list<i64> label_ids
     15: optional list<string> label_texts
     16: optional ModelConfig model_config
+    17: optional list<i64> knowledge_ids
 }
 
 struct ListAppReq {

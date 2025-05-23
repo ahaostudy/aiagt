@@ -32,6 +32,7 @@ func main() {
 		db.NewLabelDao(),
 		rpc.UserCli,
 		rpc.PluginCli,
+		rpc.KnowledgeCli,
 	)
 
 	config := conf.Conf()

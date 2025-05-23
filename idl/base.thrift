@@ -15,7 +15,7 @@ struct PaginationResp {
 }
 
 struct IDReq {
-    1: required i64 id (go.tag='path:"id"')
+    1: required i64 id (go.tag='path:"id" query:"id"')
 }
 
 struct IDsReq {

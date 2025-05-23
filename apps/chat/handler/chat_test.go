@@ -16,7 +16,7 @@ func init() {
 }
 
 func TestChatServiceImpl_buildNewTitle(t *testing.T) {
-	svc := NewChatService(nil, nil, nil, nil, nil, rpc.ModelCli, rpc.ModelStreamCli)
+	svc := NewChatService(nil, nil, nil, nil, nil, rpc.ModelCli, rpc.ModelStreamCli, nil)
 	ctx := context.Background()
 
 	ctx, err := login(ctx)

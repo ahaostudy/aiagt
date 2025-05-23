@@ -14,13 +14,14 @@ import (
 type MessageType int64
 
 const (
-	MessageType_TEXT          MessageType = 0
-	MessageType_IMAGE         MessageType = 1
-	MessageType_FILE          MessageType = 2
-	MessageType_FUNCTION      MessageType = 3
-	MessageType_FUNCTION_CALL MessageType = 4
-	MessageType_TOOL          MessageType = 5
-	MessageType_TOOL_CALL     MessageType = 6
+	MessageType_TEXT                MessageType = 0
+	MessageType_IMAGE               MessageType = 1
+	MessageType_FILE                MessageType = 2
+	MessageType_FUNCTION            MessageType = 3
+	MessageType_FUNCTION_CALL       MessageType = 4
+	MessageType_TOOL                MessageType = 5
+	MessageType_TOOL_CALL           MessageType = 6
+	MessageType_KNOWLEDGE_RETRIEVAL MessageType = 7
 )
 
 func (p MessageType) String() string {
@@ -39,6 +40,8 @@ func (p MessageType) String() string {
 		return "TOOL"
 	case MessageType_TOOL_CALL:
 		return "TOOL_CALL"
+	case MessageType_KNOWLEDGE_RETRIEVAL:
+		return "KNOWLEDGE_RETRIEVAL"
 	}
 	return "<UNSET>"
 }
@@ -59,6 +62,8 @@ func MessageTypeFromString(s string) (MessageType, error) {
 		return MessageType_TOOL, nil
 	case "TOOL_CALL":
 		return MessageType_TOOL_CALL, nil
+	case "KNOWLEDGE_RETRIEVAL":
+		return MessageType_KNOWLEDGE_RETRIEVAL, nil
 	}
 	return MessageType(0), fmt.Errorf("not a valid MessageType string")
 }
@@ -86,6 +91,7 @@ const (
 	MessageRole_SYSTEM    MessageRole = 2
 	MessageRole_FUNCTION  MessageRole = 3
 	MessageRole_TOOL      MessageRole = 4
+	MessageRole_KNOWLEDGE MessageRole = 5
 )
 
 func (p MessageRole) String() string {
@@ -100,6 +106,8 @@ func (p MessageRole) String() string {
 		return "FUNCTION"
 	case MessageRole_TOOL:
 		return "TOOL"
+	case MessageRole_KNOWLEDGE:
+		return "KNOWLEDGE"
 	}
 	return "<UNSET>"
 }
@@ -116,6 +124,8 @@ func MessageRoleFromString(s string) (MessageRole, error) {
 		return MessageRole_FUNCTION, nil
 	case "TOOL":
 		return MessageRole_TOOL, nil
+	case "KNOWLEDGE":
+		return MessageRole_KNOWLEDGE, nil
 	}
 	return MessageRole(0), fmt.Errorf("not a valid MessageRole string")
 }
@@ -399,6 +409,127 @@ var fieldIDToName_MessageContentValueToolCall = map[int16]string{
 	1: "id",
 	2: "name",
 	3: "arguments",
+}
+
+type MessageContentValueKnowledgeRetrieval struct {
+	KnowledgeList []*KnowledgeRetrievalInfo `thrift:"knowledge_list,1,required" frugal:"1,required,list<KnowledgeRetrievalInfo>" json:"knowledge_list"`
+	RetrievalId   string                    `thrift:"retrieval_id,2,required" frugal:"2,required,string" json:"retrieval_id"`
+}
+
+func NewMessageContentValueKnowledgeRetrieval() *MessageContentValueKnowledgeRetrieval {
+	return &MessageContentValueKnowledgeRetrieval{}
+}
+
+func (p *MessageContentValueKnowledgeRetrieval) InitDefault() {
+}
+
+func (p *MessageContentValueKnowledgeRetrieval) GetKnowledgeList() (v []*KnowledgeRetrievalInfo) {
+	return p.KnowledgeList
+}
+
+func (p *MessageContentValueKnowledgeRetrieval) GetRetrievalId() (v string) {
+	return p.RetrievalId
+}
+func (p *MessageContentValueKnowledgeRetrieval) SetKnowledgeList(val []*KnowledgeRetrievalInfo) {
+	p.KnowledgeList = val
+}
+func (p *MessageContentValueKnowledgeRetrieval) SetRetrievalId(val string) {
+	p.RetrievalId = val
+}
+
+func (p *MessageContentValueKnowledgeRetrieval) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("MessageContentValueKnowledgeRetrieval(%+v)", *p)
+}
+
+var fieldIDToName_MessageContentValueKnowledgeRetrieval = map[int16]string{
+	1: "knowledge_list",
+	2: "retrieval_id",
+}
+
+type KnowledgeRetrievalInfo struct {
+	Id             int64  `thrift:"id,1,required" frugal:"1,required,i64" json:"id"`
+	Name           string `thrift:"name,2,required" frugal:"2,required,string" json:"name"`
+	Logo           string `thrift:"logo,3,required" frugal:"3,required,string" json:"logo"`
+	Description    string `thrift:"description,4,required" frugal:"4,required,string" json:"description"`
+	Retrieving     bool   `thrift:"retrieving,5,required" frugal:"5,required,bool" json:"retrieving"`
+	RetrievalCount *int64 `thrift:"retrieval_count,6,optional" frugal:"6,optional,i64" json:"retrieval_count,omitempty"`
+}
+
+func NewKnowledgeRetrievalInfo() *KnowledgeRetrievalInfo {
+	return &KnowledgeRetrievalInfo{}
+}
+
+func (p *KnowledgeRetrievalInfo) InitDefault() {
+}
+
+func (p *KnowledgeRetrievalInfo) GetId() (v int64) {
+	return p.Id
+}
+
+func (p *KnowledgeRetrievalInfo) GetName() (v string) {
+	return p.Name
+}
+
+func (p *KnowledgeRetrievalInfo) GetLogo() (v string) {
+	return p.Logo
+}
+
+func (p *KnowledgeRetrievalInfo) GetDescription() (v string) {
+	return p.Description
+}
+
+func (p *KnowledgeRetrievalInfo) GetRetrieving() (v bool) {
+	return p.Retrieving
+}
+
+var KnowledgeRetrievalInfo_RetrievalCount_DEFAULT int64
+
+func (p *KnowledgeRetrievalInfo) GetRetrievalCount() (v int64) {
+	if !p.IsSetRetrievalCount() {
+		return KnowledgeRetrievalInfo_RetrievalCount_DEFAULT
+	}
+	return *p.RetrievalCount
+}
+func (p *KnowledgeRetrievalInfo) SetId(val int64) {
+	p.Id = val
+}
+func (p *KnowledgeRetrievalInfo) SetName(val string) {
+	p.Name = val
+}
+func (p *KnowledgeRetrievalInfo) SetLogo(val string) {
+	p.Logo = val
+}
+func (p *KnowledgeRetrievalInfo) SetDescription(val string) {
+	p.Description = val
+}
+func (p *KnowledgeRetrievalInfo) SetRetrieving(val bool) {
+	p.Retrieving = val
+}
+func (p *KnowledgeRetrievalInfo) SetRetrievalCount(val *int64) {
+	p.RetrievalCount = val
+}
+
+func (p *KnowledgeRetrievalInfo) IsSetRetrievalCount() bool {
+	return p.RetrievalCount != nil
+}
+
+func (p *KnowledgeRetrievalInfo) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("KnowledgeRetrievalInfo(%+v)", *p)
+}
+
+var fieldIDToName_KnowledgeRetrievalInfo = map[int16]string{
+	1: "id",
+	2: "name",
+	3: "logo",
+	4: "description",
+	5: "retrieving",
+	6: "retrieval_count",
 }
 
 type MessageContent struct {
@@ -1197,13 +1328,14 @@ var fieldIDToName_InitDevelopResp = map[int16]string{
 }
 
 type MessageContentValue struct {
-	Text     *MessageContentValueText     `thrift:"text,1,optional" frugal:"1,optional,MessageContentValueText" json:"text,omitempty"`
-	Image    *MessageContentValueImage    `thrift:"image,2,optional" frugal:"2,optional,MessageContentValueImage" json:"image,omitempty"`
-	File     *MessageContentValueFile     `thrift:"file,3,optional" frugal:"3,optional,MessageContentValueFile" json:"file,omitempty"`
-	Func     *MessageContentValueFunc     `thrift:"func,4,optional" frugal:"4,optional,MessageContentValueFunc" json:"func,omitempty"`
-	FuncCall *MessageContentValueFuncCall `thrift:"func_call,5,optional" frugal:"5,optional,MessageContentValueFuncCall" json:"func_call,omitempty"`
-	Tool     *MessageContentValueTool     `thrift:"tool,6,optional" frugal:"6,optional,MessageContentValueTool" json:"tool,omitempty"`
-	ToolCall *MessageContentValueToolCall `thrift:"tool_call,7,optional" frugal:"7,optional,MessageContentValueToolCall" json:"tool_call,omitempty"`
+	Text               *MessageContentValueText               `thrift:"text,1,optional" frugal:"1,optional,MessageContentValueText" json:"text,omitempty"`
+	Image              *MessageContentValueImage              `thrift:"image,2,optional" frugal:"2,optional,MessageContentValueImage" json:"image,omitempty"`
+	File               *MessageContentValueFile               `thrift:"file,3,optional" frugal:"3,optional,MessageContentValueFile" json:"file,omitempty"`
+	Func               *MessageContentValueFunc               `thrift:"func,4,optional" frugal:"4,optional,MessageContentValueFunc" json:"func,omitempty"`
+	FuncCall           *MessageContentValueFuncCall           `thrift:"func_call,5,optional" frugal:"5,optional,MessageContentValueFuncCall" json:"func_call,omitempty"`
+	Tool               *MessageContentValueTool               `thrift:"tool,6,optional" frugal:"6,optional,MessageContentValueTool" json:"tool,omitempty"`
+	ToolCall           *MessageContentValueToolCall           `thrift:"tool_call,7,optional" frugal:"7,optional,MessageContentValueToolCall" json:"tool_call,omitempty"`
+	KnowledgeRetrieval *MessageContentValueKnowledgeRetrieval `thrift:"knowledge_retrieval,8,optional" frugal:"8,optional,MessageContentValueKnowledgeRetrieval" json:"knowledge_retrieval,omitempty"`
 }
 
 func NewMessageContentValue() *MessageContentValue {
@@ -1275,6 +1407,15 @@ func (p *MessageContentValue) GetToolCall() (v *MessageContentValueToolCall) {
 	}
 	return p.ToolCall
 }
+
+var MessageContentValue_KnowledgeRetrieval_DEFAULT *MessageContentValueKnowledgeRetrieval
+
+func (p *MessageContentValue) GetKnowledgeRetrieval() (v *MessageContentValueKnowledgeRetrieval) {
+	if !p.IsSetKnowledgeRetrieval() {
+		return MessageContentValue_KnowledgeRetrieval_DEFAULT
+	}
+	return p.KnowledgeRetrieval
+}
 func (p *MessageContentValue) SetText(val *MessageContentValueText) {
 	p.Text = val
 }
@@ -1295,6 +1436,9 @@ func (p *MessageContentValue) SetTool(val *MessageContentValueTool) {
 }
 func (p *MessageContentValue) SetToolCall(val *MessageContentValueToolCall) {
 	p.ToolCall = val
+}
+func (p *MessageContentValue) SetKnowledgeRetrieval(val *MessageContentValueKnowledgeRetrieval) {
+	p.KnowledgeRetrieval = val
 }
 
 func (p *MessageContentValue) CountSetFieldsMessageContentValue() int {
@@ -1318,6 +1462,9 @@ func (p *MessageContentValue) CountSetFieldsMessageContentValue() int {
 		count++
 	}
 	if p.IsSetToolCall() {
+		count++
+	}
+	if p.IsSetKnowledgeRetrieval() {
 		count++
 	}
 	return count
@@ -1351,6 +1498,10 @@ func (p *MessageContentValue) IsSetToolCall() bool {
 	return p.ToolCall != nil
 }
 
+func (p *MessageContentValue) IsSetKnowledgeRetrieval() bool {
+	return p.KnowledgeRetrieval != nil
+}
+
 func (p *MessageContentValue) String() string {
 	if p == nil {
 		return "<nil>"
@@ -1366,6 +1517,7 @@ var fieldIDToName_MessageContentValue = map[int16]string{
 	5: "func_call",
 	6: "tool",
 	7: "tool_call",
+	8: "knowledge_retrieval",
 }
 
 type ChatService interface {

@@ -21,6 +21,7 @@ type App struct {
 	LabelIDs        []int64      `gorm:"column:label_ids;serializer:json;type:json"`
 	ModelConfig     *ModelConfig `gorm:"column:model_config;serializer:json;type:json"`
 	PublishedAt     *time.Time   `gorm:"column:published_at"`
+	KnowledgeIDs    []int64      `gorm:"column:knowledge_ids;serializer:json;type:json"`
 }
 
 type ModelConfig struct {
@@ -63,4 +64,5 @@ type AppOptional struct {
 	LabelIDs        []int64      `gorm:"column:label_ids;serializer:json;type:json"`
 	ModelConfig     *ModelConfig `gorm:"column:model_config;serializer:json;type:json"`
 	PublishedAt     *time.Time   `gorm:"column:published_at"`
+	KnowledgeIDs    []int64      `gorm:"column:knowledge_ids;serializer:json;type:json"`
 }

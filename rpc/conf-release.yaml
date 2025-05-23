@@ -27,3 +27,8 @@ workflow:
   resolver:
     address:
       - consul:8500
+
+knowledge:
+  resolver:
+    address:
+      - consul:8500

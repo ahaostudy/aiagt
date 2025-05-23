@@ -40,6 +40,11 @@ func (s *AppServiceImpl) GetAppByID(ctx context.Context, req *appsvc.GetAppByIDR
 		return nil, bizGetAppByID.CallErr(err).Log(ctx, "get plugin secrets by tool_ids error")
 	}
 
+	knowledgeList, err := s.knowledgeCli.GetKnowledgeByIDs(ctx, &base.IDsReq{Ids: app.KnowledgeIDs})
+	if err != nil {
+		return nil, bizGetAppByID.CallErr(err).Log(ctx, "get knowledge by ids error")
+	}
+
 	var (
 		publicTools       []*pluginsvc.PluginTool
 		privateToolsCount int32
@@ -70,7 +75,7 @@ func (s *AppServiceImpl) GetAppByID(ctx context.Context, req *appsvc.GetAppByIDR
 	}
 
 	resp = &appsvc.GetAppByIDResp{
-		App: mapper.NewGenApp(app, author, tools, mapper.NewGenListAppLabel(labels), pluginSecrets),
+		App: mapper.NewGenApp(app, author, tools, mapper.NewGenListAppLabel(labels), pluginSecrets, knowledgeList),
 		Ext: &appsvc.GetAppByIDRespExtend{PrivateToolsCount: privateToolsCount},
 	}
 

@@ -14,10 +14,12 @@ func Cli() *cos.Client {
 }
 
 const (
-	AvatarDir     = "avatar"
-	AppLogoDir    = "app_logo"
-	PluginLogoDir = "plugin_logo"
-	ChatFile      = "chat_file"
+	AvatarDir        = "avatar"
+	AppLogoDir       = "app_logo"
+	PluginLogoDir    = "plugin_logo"
+	KnowledgeLogoDir = "knowledge_logo"
+	ChatFile         = "chat_file"
+	KnowledgeDir     = "knowledge"
 )
 
 func InitCos(cosURL, secretID, secretKey string) {
@@ -31,4 +33,12 @@ func InitCos(cosURL, secretID, secretKey string) {
 			SecretKey: secretKey,
 		},
 	})
+}
+
+func WithContentTypeByExt(ext string) *cos.ObjectPutOptions {
+	return &cos.ObjectPutOptions{
+		ObjectPutHeaderOptions: &cos.ObjectPutHeaderOptions{
+			ContentType: "text/plain",
+		},
+	}
 }

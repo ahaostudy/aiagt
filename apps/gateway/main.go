@@ -32,6 +32,7 @@ import (
 
 	appcontroller "github.com/aiagt/aiagt/apps/app/controller"
 	chatcontroller "github.com/aiagt/aiagt/apps/chat/controller"
+	knowledgecontroller "github.com/aiagt/aiagt/apps/knowledge/controller"
 	modelcontroller "github.com/aiagt/aiagt/apps/model/controller"
 	plugincontroller "github.com/aiagt/aiagt/apps/plugin/controller"
 	usercontroller "github.com/aiagt/aiagt/apps/user/controller"
@@ -118,6 +119,7 @@ func main() {
 	plugincontroller.RegisterRouter(r, rpc.PluginCli)
 	appcontroller.RegisterRouter(r, rpc.AppCli)
 	chatcontroller.RegisterRouter(r, rpc.ChatCli, rpc.ChatStreamCli)
+	knowledgecontroller.RegisterRouter(r, rpc.KnowledgeCli)
 
 	cos.InitCos(conf.Cos.URL, conf.Cos.SecretID, conf.Cos.SecretKey)
 
@@ -130,6 +132,7 @@ func main() {
 	r.POST("/assets/app_logo", UploadCos(cos.AppLogoDir, 5*megabyte))
 	r.POST("/assets/plugin_logo", UploadCos(cos.PluginLogoDir, 5*megabyte))
 	r.POST("/assets/chat_file", UploadCos(cos.ChatFile, 5*megabyte))
+	r.POST("/assets/knowledge_logo", UploadCos(cos.KnowledgeLogoDir, 5*megabyte))
 
 	h.Spin()
 }

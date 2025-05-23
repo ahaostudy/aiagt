@@ -22,13 +22,19 @@ import (
 // PinPongHandle pin pong api
 type PinPongHandle[Q, P any] func(context.Context, *Q, ...callopt.Option) (P, error)
 
-func PinPongHandler[Q, P any](handle PinPongHandle[Q, P]) app.HandlerFunc {
+func PinPongHandler[Q, P any](handle PinPongHandle[Q, P], parsers ...PinPongHandleRequestParser[Q]) app.HandlerFunc {
 	return func(ctx context.Context, c *app.RequestContext) {
-		var req Q
-
 		hlog.CtxInfof(ctx, "uri: %s, request body: %s", string(c.Request.RequestURI()), utils.PrettyBytes(c.Request.Body(), 1<<10))
 
-		if err := c.BindAndValidate(&req); err != nil {
+		var parser PinPongHandleRequestParser[Q]
+		if len(parsers) > 0 {
+			parser = parsers[0]
+		} else {
+			parser = defaultPinPongHandleRequestParser[Q]
+		}
+
+		req, err := parser(ctx, c)
+		if err != nil {
 			c.JSON(consts.StatusOK, result.Error(bizerr.ErrCodeBadRequest, err))
 			return
 		}
@@ -41,7 +47,7 @@ func PinPongHandler[Q, P any](handle PinPongHandle[Q, P]) app.HandlerFunc {
 			ctx = ctxutil.WithToken(ctx, token)
 		}
 
-		resp, err := handle(ctx, &req)
+		resp, err := handle(ctx, req)
 		if err != nil {
 			hlog.CtxErrorf(ctx, err.Error())
 			c.JSON(consts.StatusOK, result.BizError(err))
@@ -53,6 +59,18 @@ func PinPongHandler[Q, P any](handle PinPongHandle[Q, P]) app.HandlerFunc {
 
 		c.JSON(consts.StatusOK, result.Success(resp))
 	}
+}
+
+type PinPongHandleRequestParser[Q any] func(ctx context.Context, c *app.RequestContext) (*Q, error)
+
+func defaultPinPongHandleRequestParser[Q any](ctx context.Context, c *app.RequestContext) (*Q, error) {
+	var req Q
+
+	if err := c.BindAndValidate(&req); err != nil {
+		return nil, err
+	}
+
+	return &req, nil
 }
 
 // NoReqPinPongHandle no request parameters pin pong api

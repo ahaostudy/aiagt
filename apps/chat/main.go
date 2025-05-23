@@ -35,6 +35,7 @@ func main() {
 		rpc.PluginCli,
 		rpc.ModelCli,
 		rpc.ModelStreamCli,
+		rpc.KnowledgeCli,
 	)
 
 	config := conf.Conf()

@@ -11,6 +11,7 @@ import (
 	"github.com/cloudwego/gopkg/protocol/thrift"
 
 	"github.com/aiagt/aiagt/kitex_gen/base"
+	"github.com/aiagt/aiagt/kitex_gen/knowledgesvc"
 	"github.com/aiagt/aiagt/kitex_gen/openai"
 	"github.com/aiagt/aiagt/kitex_gen/pluginsvc"
 	"github.com/aiagt/aiagt/kitex_gen/usersvc"
@@ -18,6 +19,7 @@ import (
 
 var (
 	_ = base.KitexUnusedProtection
+	_ = knowledgesvc.KitexUnusedProtection
 	_ = openai.KitexUnusedProtection
 	_ = pluginsvc.KitexUnusedProtection
 	_ = usersvc.KitexUnusedProtection
@@ -57,6 +59,7 @@ func (p *App) FastRead(buf []byte) (int, error) {
 	var issetModelConfig bool = false
 	var issetCreatedAt bool = false
 	var issetUpdatedAt bool = false
+	var issetKnowledgeIds bool = false
 	for {
 		fieldTypeId, fieldId, l, err = thrift.Binary.ReadFieldBegin(buf[offset:])
 		offset += l
@@ -407,6 +410,35 @@ func (p *App) FastRead(buf []byte) (int, error) {
 					goto SkipFieldError
 				}
 			}
+		case 24:
+			if fieldTypeId == thrift.LIST {
+				l, err = p.FastReadField24(buf[offset:])
+				offset += l
+				if err != nil {
+					goto ReadFieldError
+				}
+				issetKnowledgeIds = true
+			} else {
+				l, err = thrift.Binary.Skip(buf[offset:], fieldTypeId)
+				offset += l
+				if err != nil {
+					goto SkipFieldError
+				}
+			}
+		case 25:
+			if fieldTypeId == thrift.LIST {
+				l, err = p.FastReadField25(buf[offset:])
+				offset += l
+				if err != nil {
+					goto ReadFieldError
+				}
+			} else {
+				l, err = thrift.Binary.Skip(buf[offset:], fieldTypeId)
+				offset += l
+				if err != nil {
+					goto SkipFieldError
+				}
+			}
 		default:
 			l, err = thrift.Binary.Skip(buf[offset:], fieldTypeId)
 			offset += l
@@ -503,6 +535,11 @@ func (p *App) FastRead(buf []byte) (int, error) {
 
 	if !issetUpdatedAt {
 		fieldId = 21
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetKnowledgeIds {
+		fieldId = 24
 		goto RequiredFieldNotSetError
 	}
 	return offset, nil
@@ -891,6 +928,55 @@ func (p *App) FastReadField23(buf []byte) (int, error) {
 	return offset, nil
 }
 
+func (p *App) FastReadField24(buf []byte) (int, error) {
+	offset := 0
+
+	_, size, l, err := thrift.Binary.ReadListBegin(buf[offset:])
+	offset += l
+	if err != nil {
+		return offset, err
+	}
+	_field := make([]int64, 0, size)
+	for i := 0; i < size; i++ {
+		var _elem int64
+		if v, l, err := thrift.Binary.ReadI64(buf[offset:]); err != nil {
+			return offset, err
+		} else {
+			offset += l
+			_elem = v
+		}
+
+		_field = append(_field, _elem)
+	}
+	p.KnowledgeIds = _field
+	return offset, nil
+}
+
+func (p *App) FastReadField25(buf []byte) (int, error) {
+	offset := 0
+
+	_, size, l, err := thrift.Binary.ReadListBegin(buf[offset:])
+	offset += l
+	if err != nil {
+		return offset, err
+	}
+	_field := make([]*knowledgesvc.Knowledge, 0, size)
+	values := make([]knowledgesvc.Knowledge, size)
+	for i := 0; i < size; i++ {
+		_elem := &values[i]
+		_elem.InitDefault()
+		if l, err := _elem.FastRead(buf[offset:]); err != nil {
+			return offset, err
+		} else {
+			offset += l
+		}
+
+		_field = append(_field, _elem)
+	}
+	p.KnowledgeList = _field
+	return offset, nil
+}
+
 func (p *App) FastWrite(buf []byte) int {
 	return p.FastWriteNocopy(buf, nil)
 }
@@ -921,6 +1007,8 @@ func (p *App) FastWriteNocopy(buf []byte, w thrift.NocopyWriter) int {
 		offset += p.fastWriteField21(buf[offset:], w)
 		offset += p.fastWriteField22(buf[offset:], w)
 		offset += p.fastWriteField23(buf[offset:], w)
+		offset += p.fastWriteField24(buf[offset:], w)
+		offset += p.fastWriteField25(buf[offset:], w)
 	}
 	offset += thrift.Binary.WriteFieldStop(buf[offset:])
 	return offset
@@ -952,6 +1040,8 @@ func (p *App) BLength() int {
 		l += p.field21Length()
 		l += p.field22Length()
 		l += p.field23Length()
+		l += p.field24Length()
+		l += p.field25Length()
 	}
 	l += thrift.Binary.FieldStopLength()
 	return l
@@ -1170,6 +1260,36 @@ func (p *App) fastWriteField23(buf []byte, w thrift.NocopyWriter) int {
 	return offset
 }
 
+func (p *App) fastWriteField24(buf []byte, w thrift.NocopyWriter) int {
+	offset := 0
+	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.LIST, 24)
+	listBeginOffset := offset
+	offset += thrift.Binary.ListBeginLength()
+	var length int
+	for _, v := range p.KnowledgeIds {
+		length++
+		offset += thrift.Binary.WriteI64(buf[offset:], v)
+	}
+	thrift.Binary.WriteListBegin(buf[listBeginOffset:], thrift.I64, length)
+	return offset
+}
+
+func (p *App) fastWriteField25(buf []byte, w thrift.NocopyWriter) int {
+	offset := 0
+	if p.IsSetKnowledgeList() {
+		offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.LIST, 25)
+		listBeginOffset := offset
+		offset += thrift.Binary.ListBeginLength()
+		var length int
+		for _, v := range p.KnowledgeList {
+			length++
+			offset += v.FastWriteNocopy(buf[offset:], w)
+		}
+		thrift.Binary.WriteListBegin(buf[listBeginOffset:], thrift.STRUCT, length)
+	}
+	return offset
+}
+
 func (p *App) field1Length() int {
 	l := 0
 	l += thrift.Binary.FieldBeginLength()
@@ -1354,6 +1474,28 @@ func (p *App) field23Length() int {
 		l += thrift.Binary.FieldBeginLength()
 		l += thrift.Binary.ListBeginLength()
 		for _, v := range p.PluginSecrets {
+			_ = v
+			l += v.BLength()
+		}
+	}
+	return l
+}
+
+func (p *App) field24Length() int {
+	l := 0
+	l += thrift.Binary.FieldBeginLength()
+	l += thrift.Binary.ListBeginLength()
+	l +=
+		thrift.Binary.I64Length() * len(p.KnowledgeIds)
+	return l
+}
+
+func (p *App) field25Length() int {
+	l := 0
+	if p.IsSetKnowledgeList() {
+		l += thrift.Binary.FieldBeginLength()
+		l += thrift.Binary.ListBeginLength()
+		for _, v := range p.KnowledgeList {
 			_ = v
 			l += v.BLength()
 		}
@@ -3327,6 +3469,20 @@ func (p *UpdateAppReq) FastRead(buf []byte) (int, error) {
 					goto SkipFieldError
 				}
 			}
+		case 17:
+			if fieldTypeId == thrift.LIST {
+				l, err = p.FastReadField17(buf[offset:])
+				offset += l
+				if err != nil {
+					goto ReadFieldError
+				}
+			} else {
+				l, err = thrift.Binary.Skip(buf[offset:], fieldTypeId)
+				offset += l
+				if err != nil {
+					goto SkipFieldError
+				}
+			}
 		default:
 			l, err = thrift.Binary.Skip(buf[offset:], fieldTypeId)
 			offset += l
@@ -3613,6 +3769,30 @@ func (p *UpdateAppReq) FastReadField16(buf []byte) (int, error) {
 	return offset, nil
 }
 
+func (p *UpdateAppReq) FastReadField17(buf []byte) (int, error) {
+	offset := 0
+
+	_, size, l, err := thrift.Binary.ReadListBegin(buf[offset:])
+	offset += l
+	if err != nil {
+		return offset, err
+	}
+	_field := make([]int64, 0, size)
+	for i := 0; i < size; i++ {
+		var _elem int64
+		if v, l, err := thrift.Binary.ReadI64(buf[offset:]); err != nil {
+			return offset, err
+		} else {
+			offset += l
+			_elem = v
+		}
+
+		_field = append(_field, _elem)
+	}
+	p.KnowledgeIds = _field
+	return offset, nil
+}
+
 func (p *UpdateAppReq) FastWrite(buf []byte) int {
 	return p.FastWriteNocopy(buf, nil)
 }
@@ -3636,6 +3816,7 @@ func (p *UpdateAppReq) FastWriteNocopy(buf []byte, w thrift.NocopyWriter) int {
 		offset += p.fastWriteField14(buf[offset:], w)
 		offset += p.fastWriteField15(buf[offset:], w)
 		offset += p.fastWriteField16(buf[offset:], w)
+		offset += p.fastWriteField17(buf[offset:], w)
 	}
 	offset += thrift.Binary.WriteFieldStop(buf[offset:])
 	return offset
@@ -3660,6 +3841,7 @@ func (p *UpdateAppReq) BLength() int {
 		l += p.field14Length()
 		l += p.field15Length()
 		l += p.field16Length()
+		l += p.field17Length()
 	}
 	l += thrift.Binary.FieldStopLength()
 	return l
@@ -3835,6 +4017,22 @@ func (p *UpdateAppReq) fastWriteField16(buf []byte, w thrift.NocopyWriter) int {
 	return offset
 }
 
+func (p *UpdateAppReq) fastWriteField17(buf []byte, w thrift.NocopyWriter) int {
+	offset := 0
+	if p.IsSetKnowledgeIds() {
+		offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.LIST, 17)
+		listBeginOffset := offset
+		offset += thrift.Binary.ListBeginLength()
+		var length int
+		for _, v := range p.KnowledgeIds {
+			length++
+			offset += thrift.Binary.WriteI64(buf[offset:], v)
+		}
+		thrift.Binary.WriteListBegin(buf[listBeginOffset:], thrift.I64, length)
+	}
+	return offset
+}
+
 func (p *UpdateAppReq) field1Length() int {
 	l := 0
 	l += thrift.Binary.FieldBeginLength()
@@ -3985,6 +4183,17 @@ func (p *UpdateAppReq) field16Length() int {
 	if p.IsSetModelConfig() {
 		l += thrift.Binary.FieldBeginLength()
 		l += p.ModelConfig.BLength()
+	}
+	return l
+}
+
+func (p *UpdateAppReq) field17Length() int {
+	l := 0
+	if p.IsSetKnowledgeIds() {
+		l += thrift.Binary.FieldBeginLength()
+		l += thrift.Binary.ListBeginLength()
+		l +=
+			thrift.Binary.I64Length() * len(p.KnowledgeIds)
 	}
 	return l
 }

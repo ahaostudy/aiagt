@@ -103,9 +103,18 @@ func (d *ApiKeyDao) Delete(ctx context.Context, id int64) error {
 
 // GetBySourceOrDefault get api_key by source or default
 func (d *ApiKeyDao) GetBySourceOrDefault(ctx context.Context, source string) (*model.ApiKey, error) {
-	var result model.ApiKey
+	var (
+		result model.ApiKey
+		order  string
+	)
 
-	err := d.db(ctx).Model(d.m).Where("source = ? OR source = ?", source, model.DefaultSource).First(&result).Error
+	if source > model.DefaultSource {
+		order = "desc"
+	} else {
+		order = "asc"
+	}
+
+	err := d.db(ctx).Model(d.m).Where("source = ? OR source = ?", source, model.DefaultSource).Order("source " + order).First(&result).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "api_key dao get by source error")
 	}

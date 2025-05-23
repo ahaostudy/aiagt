@@ -126,7 +126,7 @@ var fieldIDToName_PaginationResp = map[int16]string{
 }
 
 type IDReq struct {
-	Id int64 `thrift:"id,1,required" frugal:"1,required,i64" path:"id"`
+	Id int64 `thrift:"id,1,required" frugal:"1,required,i64" path:"id" query:"id"`
 }
 
 func NewIDReq() *IDReq {

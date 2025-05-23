@@ -10,6 +10,7 @@ enum MessageType {
     FUNCTION_CALL
     TOOL
     TOOL_CALL
+    KNOWLEDGE_RETRIEVAL
 }
 
 enum MessageRole {
@@ -18,6 +19,7 @@ enum MessageRole {
     SYSTEM
     FUNCTION
     TOOL
+    KNOWLEDGE
 }
 
 union MessageContentValue {
@@ -28,6 +30,7 @@ union MessageContentValue {
     5: MessageContentValueFuncCall func_call
     6: MessageContentValueTool tool
     7: MessageContentValueToolCall tool_call
+    8: MessageContentValueKnowledgeRetrieval knowledge_retrieval
 }
 
 struct MessageContentValueText {
@@ -63,6 +66,20 @@ struct MessageContentValueToolCall {
     1: required string id
     2: required string name
     3: required string arguments
+}
+
+struct MessageContentValueKnowledgeRetrieval {
+    1: required list<KnowledgeRetrievalInfo> knowledge_list
+    2: required string retrieval_id
+}
+
+struct KnowledgeRetrievalInfo {
+    1: required i64 id
+    2: required string name
+    3: required string logo
+    4: required string description
+    5: required bool retrieving
+    6: optional i64 retrieval_count
 }
 
 struct MessageContent {

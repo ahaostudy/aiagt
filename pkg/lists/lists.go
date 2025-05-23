@@ -44,3 +44,20 @@ func AnyList[T any](list []T) []any {
 
 	return result
 }
+
+func InsertSlice[T any](slice []T, index int, elements ...T) []T {
+	newLen := len(slice) + len(elements)
+
+	if newLen > cap(slice) {
+		newSlice := make([]T, newLen)
+		copy(newSlice, slice[:index])
+		copy(newSlice[index:], elements)
+		copy(newSlice[index+len(elements):], slice[index:])
+		return newSlice
+	}
+
+	newSlice := slice[:newLen]
+	copy(newSlice[index+len(elements):], slice[index:])
+	copy(newSlice[index:], elements)
+	return newSlice
+}

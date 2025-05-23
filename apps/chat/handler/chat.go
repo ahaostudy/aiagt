@@ -8,6 +8,12 @@ import (
 	"io"
 	"strings"
 	"sync"
+	"time"
+
+	"github.com/google/uuid"
+
+	"github.com/aiagt/aiagt/kitex_gen/knowledgesvc"
+	"github.com/aiagt/aiagt/pkg/lists"
 
 	"github.com/cloudwego/kitex/pkg/klog"
 
@@ -128,6 +134,12 @@ func (s *ChatServiceImpl) Chat(req *chatsvc.ChatReq, stream chatsvc.ChatService_
 		}
 	}
 
+	// retrieval knowledge
+	msgs, err = s.retrievalKnowledge(ctx, stream, app.GetKnowledgeIds(), app.GetKnowledgeList(), req.GetConversationId(), msgs)
+	if err != nil {
+		return bizChat.NewErr(err).Log(ctx, "retrieval knowledge error")
+	}
+
 	// verify that the user has access rights to the conversation
 	if conversation.UserID != userID {
 		return bizChat.CodeErr(bizerr.ErrCodeForbidden).Log(ctx, "user does not have access rights to the conversation")
@@ -171,7 +183,7 @@ func (s *ChatServiceImpl) chat(ctx context.Context, conversationID int64, user *
 		OpenaiReq: &openai.ChatCompletionRequest{
 			Messages: append([]*openai.ChatCompletionMessage{{
 				Role:    "system",
-				Content: utils.PtrOf(fmt.Sprintf(`You are an agent on the ai agent platform "Aiagt", your identity information is:\nName: %s,\nDescription: "%s",\nAuthor: %s`, app.Name, app.Description, app.Author.Username)),
+				Content: utils.PtrOf(fmt.Sprintf(`You are an agent on the ai agent platform "Aiagt", your identity information is:\nName: %s,\nDescription: "%s",\nAuthor: %s\nCurrent time: %s`, app.Name, app.Description, app.Author.Username, time.Now().Format(time.RFC3339))),
 			}}, messages...),
 			MaxTokens:   modelConfig.MaxTokens,
 			Temperature: modelConfig.Temperature,
@@ -667,4 +679,109 @@ func (s *ChatServiceImpl) generateNewTitle(ctx context.Context, stream chatsvc.C
 			title.WriteString(utils.ValOf(resp.OpenaiResp.Choices[0].Delta.Content))
 		}
 	}
+}
+
+func (s *ChatServiceImpl) retrievalKnowledge(ctx context.Context, stream chatsvc.ChatService_ChatServer, knowledgeIDs []int64, knowledgeList []*knowledgesvc.Knowledge, conversationID int64, msgs []*model.Message) ([]*model.Message, error) {
+	if len(knowledgeIDs) == 0 {
+		return msgs, nil
+	}
+
+	// get the last query
+	var lastQuery string
+	for i := len(msgs) - 1; i >= 0; i-- {
+		msg := msgs[i]
+		if msg.Type == model.MessageTypeText && msg.Content.Text != nil {
+			lastQuery = msg.Content.Text.Text
+			break
+		}
+	}
+	if len(lastQuery) == 0 {
+		return msgs, nil
+	}
+
+	retrievalID := uuid.NewString()
+
+	// send knowledge retrieval message
+	err := stream.Send(&chatsvc.ChatResp{
+		Messages: []*chatsvc.Message{{
+			Role: chatsvc.MessageRole_KNOWLEDGE,
+			Content: &chatsvc.MessageContent{
+				Type: chatsvc.MessageType_KNOWLEDGE_RETRIEVAL,
+				Content: &chatsvc.MessageContentValue{KnowledgeRetrieval: &chatsvc.MessageContentValueKnowledgeRetrieval{
+					KnowledgeList: lists.Map(knowledgeList, func(t *knowledgesvc.Knowledge) *chatsvc.KnowledgeRetrievalInfo {
+						return &chatsvc.KnowledgeRetrievalInfo{
+							Id:             t.GetId(),
+							Name:           t.GetName(),
+							Logo:           t.GetLogo(),
+							Description:    t.GetDescription(),
+							Retrieving:     true,
+							RetrievalCount: nil,
+						}
+					}),
+					RetrievalId: retrievalID,
+				}},
+			},
+		}},
+		ConversationId: conversationID,
+	})
+	if err != nil {
+		return nil, bizChat.NewErr(err).Log(ctx, "send knowledge retrieval message error")
+	}
+
+	// retrieval knowledge
+	retrievalResp, err := s.knowledgeCli.Retrieval(ctx, &knowledgesvc.RetrievalReq{
+		KnowledgeIds: knowledgeIDs,
+		Query:        lastQuery,
+	})
+	if err != nil {
+		return nil, bizChat.CallErr(err).Log(ctx, "get knowledge chunks error")
+	}
+
+	// inject to messages
+	var (
+		chunkMessages           []*model.Message
+		knowledgeRetrievalCount = make(map[int64]int64)
+	)
+	for _, chunk := range retrievalResp.GetChunks() {
+		chunkMessages = append(chunkMessages, &model.Message{
+			MessageContent: model.MessageContent{
+				Type: model.MessageTypeText,
+				Content: model.MessageContentValue{Text: &model.MessageContentValueText{
+					Text: "[Reference] " + chunk.GetContent(),
+				}},
+			},
+			ConversationID: conversationID,
+			Role:           model.MessageRoleUser,
+		})
+		knowledgeRetrievalCount[chunk.GetKnowledgeId()]++
+	}
+
+	// send knowledge retrieval result message
+	err = stream.Send(&chatsvc.ChatResp{
+		Messages: []*chatsvc.Message{{
+			Role: chatsvc.MessageRole_KNOWLEDGE,
+			Content: &chatsvc.MessageContent{
+				Type: chatsvc.MessageType_KNOWLEDGE_RETRIEVAL,
+				Content: &chatsvc.MessageContentValue{KnowledgeRetrieval: &chatsvc.MessageContentValueKnowledgeRetrieval{
+					KnowledgeList: lists.Map(knowledgeList, func(t *knowledgesvc.Knowledge) *chatsvc.KnowledgeRetrievalInfo {
+						return &chatsvc.KnowledgeRetrievalInfo{
+							Id:             t.GetId(),
+							Name:           t.GetName(),
+							Logo:           t.GetLogo(),
+							Description:    t.GetDescription(),
+							Retrieving:     false,
+							RetrievalCount: utils.PtrOf(knowledgeRetrievalCount[t.GetId()]),
+						}
+					}),
+					RetrievalId: retrievalID,
+				}},
+			},
+		}},
+		ConversationId: conversationID,
+	})
+	if err != nil {
+		return nil, bizChat.NewErr(err).Log(ctx, "send knowledge retrieval result message error")
+	}
+
+	return lists.InsertSlice(msgs, 0, chunkMessages...), nil
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/aiagt/aiagt/common/kitex/clientsuite"
 	appsvc "github.com/aiagt/aiagt/kitex_gen/appsvc/appservice"
 	chatsvc "github.com/aiagt/aiagt/kitex_gen/chatsvc/chatservice"
+	knowledgesvc "github.com/aiagt/aiagt/kitex_gen/knowledgesvc/knowledgeservice"
 	modelsvc "github.com/aiagt/aiagt/kitex_gen/modelsvc/modelservice"
 	pluginsvc "github.com/aiagt/aiagt/kitex_gen/pluginsvc/pluginservice"
 	usersvc "github.com/aiagt/aiagt/kitex_gen/usersvc/userservice"
@@ -28,6 +29,8 @@ var (
 	ModelStreamCli modelsvc.StreamClient
 
 	WorkflowCli workflowsvc.Client
+
+	KnowledgeCli knowledgesvc.Client
 
 	conf = new(ktconf.MultiClientConf)
 )
@@ -53,4 +56,6 @@ func init() {
 	ModelStreamCli = modelsvc.MustNewStreamClient("model", streamclient.WithSuite(clientsuite.NewClientSuite(conf, "model")))
 
 	WorkflowCli = workflowsvc.MustNewClient("workflow", client.WithSuite(clientsuite.NewClientSuite(conf, "workflow")))
+
+	KnowledgeCli = knowledgesvc.MustNewClient("knowledge", client.WithSuite(clientsuite.NewClientSuite(conf, "knowledge")))
 }

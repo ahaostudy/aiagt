@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/aiagt/aiagt/kitex_gen/base"
+	"github.com/aiagt/aiagt/kitex_gen/knowledgesvc"
 	"github.com/aiagt/aiagt/kitex_gen/openai"
 	"github.com/aiagt/aiagt/kitex_gen/pluginsvc"
 	"github.com/aiagt/aiagt/kitex_gen/usersvc"
@@ -35,6 +36,8 @@ type App struct {
 	UpdatedAt       *base.Time                 `thrift:"updated_at,21,required" frugal:"21,required,base.Time" json:"updated_at"`
 	PublishedAt     *base.Time                 `thrift:"published_at,22,optional" frugal:"22,optional,base.Time" json:"published_at,omitempty"`
 	PluginSecrets   []*pluginsvc.PluginSecrets `thrift:"plugin_secrets,23,optional" frugal:"23,optional,list<pluginsvc.PluginSecrets>" json:"plugin_secrets,omitempty"`
+	KnowledgeIds    []int64                    `thrift:"knowledge_ids,24,required" frugal:"24,required,list<i64>" json:"knowledge_ids"`
+	KnowledgeList   []*knowledgesvc.Knowledge  `thrift:"knowledge_list,25,optional" frugal:"25,optional,list<knowledgesvc.Knowledge>" json:"knowledge_list,omitempty"`
 }
 
 func NewApp() *App {
@@ -175,6 +178,19 @@ func (p *App) GetPluginSecrets() (v []*pluginsvc.PluginSecrets) {
 	}
 	return p.PluginSecrets
 }
+
+func (p *App) GetKnowledgeIds() (v []int64) {
+	return p.KnowledgeIds
+}
+
+var App_KnowledgeList_DEFAULT []*knowledgesvc.Knowledge
+
+func (p *App) GetKnowledgeList() (v []*knowledgesvc.Knowledge) {
+	if !p.IsSetKnowledgeList() {
+		return App_KnowledgeList_DEFAULT
+	}
+	return p.KnowledgeList
+}
 func (p *App) SetId(val int64) {
 	p.Id = val
 }
@@ -244,6 +260,12 @@ func (p *App) SetPublishedAt(val *base.Time) {
 func (p *App) SetPluginSecrets(val []*pluginsvc.PluginSecrets) {
 	p.PluginSecrets = val
 }
+func (p *App) SetKnowledgeIds(val []int64) {
+	p.KnowledgeIds = val
+}
+func (p *App) SetKnowledgeList(val []*knowledgesvc.Knowledge) {
+	p.KnowledgeList = val
+}
 
 func (p *App) IsSetTools() bool {
 	return p.Tools != nil
@@ -277,6 +299,10 @@ func (p *App) IsSetPluginSecrets() bool {
 	return p.PluginSecrets != nil
 }
 
+func (p *App) IsSetKnowledgeList() bool {
+	return p.KnowledgeList != nil
+}
+
 func (p *App) String() string {
 	if p == nil {
 		return "<nil>"
@@ -308,6 +334,8 @@ var fieldIDToName_App = map[int16]string{
 	21: "updated_at",
 	22: "published_at",
 	23: "plugin_secrets",
+	24: "knowledge_ids",
+	25: "knowledge_list",
 }
 
 type ModelConfig struct {
@@ -787,6 +815,7 @@ type UpdateAppReq struct {
 	LabelIds        []int64      `thrift:"label_ids,14,optional" frugal:"14,optional,list<i64>" json:"label_ids,omitempty"`
 	LabelTexts      []string     `thrift:"label_texts,15,optional" frugal:"15,optional,list<string>" json:"label_texts,omitempty"`
 	ModelConfig     *ModelConfig `thrift:"model_config,16,optional" frugal:"16,optional,ModelConfig" json:"model_config,omitempty"`
+	KnowledgeIds    []int64      `thrift:"knowledge_ids,17,optional" frugal:"17,optional,list<i64>" json:"knowledge_ids,omitempty"`
 }
 
 func NewUpdateAppReq() *UpdateAppReq {
@@ -934,6 +963,15 @@ func (p *UpdateAppReq) GetModelConfig() (v *ModelConfig) {
 	}
 	return p.ModelConfig
 }
+
+var UpdateAppReq_KnowledgeIds_DEFAULT []int64
+
+func (p *UpdateAppReq) GetKnowledgeIds() (v []int64) {
+	if !p.IsSetKnowledgeIds() {
+		return UpdateAppReq_KnowledgeIds_DEFAULT
+	}
+	return p.KnowledgeIds
+}
 func (p *UpdateAppReq) SetId(val int64) {
 	p.Id = val
 }
@@ -981,6 +1019,9 @@ func (p *UpdateAppReq) SetLabelTexts(val []string) {
 }
 func (p *UpdateAppReq) SetModelConfig(val *ModelConfig) {
 	p.ModelConfig = val
+}
+func (p *UpdateAppReq) SetKnowledgeIds(val []int64) {
+	p.KnowledgeIds = val
 }
 
 func (p *UpdateAppReq) IsSetName() bool {
@@ -1043,6 +1084,10 @@ func (p *UpdateAppReq) IsSetModelConfig() bool {
 	return p.ModelConfig != nil
 }
 
+func (p *UpdateAppReq) IsSetKnowledgeIds() bool {
+	return p.KnowledgeIds != nil
+}
+
 func (p *UpdateAppReq) String() string {
 	if p == nil {
 		return "<nil>"
@@ -1067,6 +1112,7 @@ var fieldIDToName_UpdateAppReq = map[int16]string{
 	14: "label_ids",
 	15: "label_texts",
 	16: "model_config",
+	17: "knowledge_ids",
 }
 
 type ListAppReq struct {

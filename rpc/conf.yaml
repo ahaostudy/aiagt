@@ -26,4 +26,9 @@ model:
 workflow:
   resolver:
     address:
-      - consul:8500
+      - localhost:8500
+
+knowledge:
+  resolver:
+    address:
+      - localhost:8500

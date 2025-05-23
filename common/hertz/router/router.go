@@ -9,8 +9,8 @@ func GET[Q, P any](r *route.RouterGroup, relativePath string, handle handler.Pin
 	r.GET(relativePath, handler.PinPongHandler(handle))
 }
 
-func POST[Q, P any](r *route.RouterGroup, relativePath string, handle handler.PinPongHandle[Q, P]) {
-	r.POST(relativePath, handler.PinPongHandler(handle))
+func POST[Q, P any](r *route.RouterGroup, relativePath string, handle handler.PinPongHandle[Q, P], parsers ...handler.PinPongHandleRequestParser[Q]) {
+	r.POST(relativePath, handler.PinPongHandler(handle, parsers...))
 }
 
 func PUT[Q, P any](r *route.RouterGroup, relativePath string, handle handler.PinPongHandle[Q, P]) {
